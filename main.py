@@ -12,12 +12,12 @@ import csv
 load_dotenv()
 
 
-def transfer_data_to_csv(account_id, ad_currency, ga_currency):
+def transfer_data_to_csv(account_id):
     today = datetime.now()
 
-    currency_response = requests.get(f'https://cdn.jsdelivr.net/npm/@fawazahmed0/'
-                                     f'currency-api@{today.strftime("%Y-%m-%d")}/v1/currencies/{ad_currency}.json')
-    exchange_rate = currency_response.json()[f'{ad_currency}'][f'{ga_currency}']
+    # currency_response = requests.get(f'https://cdn.jsdelivr.net/npm/@fawazahmed0/'
+    #                                  f'currency-api@{today.strftime("%Y-%m-%d")}/v1/currencies/{ad_currency}.json')
+    # exchange_rate = currency_response.json()[f'{ad_currency}'][f'{ga_currency}']
 
     user_a_id = os.getenv('fb_app_id')
     user_a_sec = os.getenv('fb_account_secret')
@@ -33,13 +33,14 @@ def transfer_data_to_csv(account_id, ad_currency, ga_currency):
     insights = account.get_insights(fields=[
         # AdsInsights.Field.campaign_id,
         AdsInsights.Field.campaign_name,
-        AdsInsights.Field.adset_id,
+        # AdsInsights.Field.adset_id,
         AdsInsights.Field.adset_name,
         AdsInsights.Field.spend,
         AdsInsights.Field.impressions,
         AdsInsights.Field.clicks,
+        AdsInsights.Field.ad_id
     ], params={
-        'level': 'adset',
+        'level': 'ad',
         'time_increment': 1,
         'date_preset': 'maximum'
         # 'time_range': {
@@ -49,11 +50,10 @@ def transfer_data_to_csv(account_id, ad_currency, ga_currency):
     })
     campaign_data = []
     for i in insights:
-        campaign_data.append([i['adset_id'], i['adset_name'], 'facebook', i['campaign_name'], i['date_stop'],
-                              i['impressions'], i['clicks'],
-                              format(float(i['spend']) * exchange_rate, '.2f')])
+        campaign_data.append(['facebook', i['campaign_name'], i['adset_name'],
+                              i['ad_id'], i['impressions'], i['clicks'], i['spend']])
 
-    keys = ['utm_id', 'utm_campaign', 'utm_source', 'utm_medium', 'date', 'impressions', 'clicks', 'cost']
+    keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'impressions', 'clocks', 'cost']
 
     with open('cost.csv', 'w+') as csvfile:
         writer = csv.writer(csvfile)
@@ -61,4 +61,4 @@ def transfer_data_to_csv(account_id, ad_currency, ga_currency):
         writer.writerows(campaign_data)
 
 
-transfer_data_to_csv('7984974584857372', 'usd', 'uah')
+transfer_data_to_csv('7984974584857372')
