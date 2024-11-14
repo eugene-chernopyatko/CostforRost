@@ -8,32 +8,36 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import csv
 
-
 load_dotenv()
+
+"""Выбор начальной даты для выгрузки"""
+since_year = 2024
+since_month = 10
+since_day = 4
+
+"""Выбор конечной даты для выгрузки"""
+until_year = 2024
+until_month = 10
+until_day = 5
 
 
 def transfer_data_to_csv(account_id):
-    today = datetime.now()
-
-    # currency_response = requests.get(f'https://cdn.jsdelivr.net/npm/@fawazahmed0/'
-    #                                  f'currency-api@{today.strftime("%Y-%m-%d")}/v1/currencies/{ad_currency}.json')
-    # exchange_rate = currency_response.json()[f'{ad_currency}'][f'{ga_currency}']
-
+    """Получение токенов из переменных виртуального окружения"""
     user_a_id = os.getenv('fb_app_id')
     user_a_sec = os.getenv('fb_account_secret')
     user_a_token = os.getenv('fb_access_token')
 
+    """Аутентификация Meta"""
     FacebookAdsApi.init(user_a_id, user_a_sec, user_a_token)
 
+    """Получить список всех доступных рекламных аккаунтов"""
     # me = User(fbid='me')
     # my_accounts = list(me.get_ad_accounts(fields=[AdAccount.Field.name]))
     # print(my_accounts)
 
     account = AdAccount(f'act_{account_id}')
     insights = account.get_insights(fields=[
-        # AdsInsights.Field.campaign_id,
         AdsInsights.Field.campaign_name,
-        # AdsInsights.Field.adset_id,
         AdsInsights.Field.adset_name,
         AdsInsights.Field.spend,
         AdsInsights.Field.impressions,
@@ -42,23 +46,22 @@ def transfer_data_to_csv(account_id):
     ], params={
         'level': 'ad',
         'time_increment': 1,
-        'date_preset': 'maximum'
-        # 'time_range': {
-        #     'since': val.strftime('%Y-%m-%d'),
-        #     'until': yesterday.strftime('%Y-%m-%d')
-        # },
+        'time_range': {
+            'since': datetime(since_year, since_month, since_day).strftime('%Y-%m-%d'),
+            'until': datetime(until_year, until_month, until_day).strftime('%Y-%m-%d')
+        },
     })
     campaign_data = []
     for i in insights:
         campaign_data.append(['facebook', i['campaign_name'], i['adset_name'],
-                              i['ad_id'], i['impressions'], i['clicks'], i['spend']])
+                              i['ad_id'], i['impressions'], i['clicks'], i['spend'], i['date_stop']])
 
-    keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'impressions', 'clocks', 'cost']
+    keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'impressions', 'clocks', 'cost', 'date']
 
-    with open('cost.csv', 'w+') as csvfile:
+    with open('cost.csv', 'a') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(keys)
         writer.writerows(campaign_data)
 
 
-transfer_data_to_csv('7984974584857372')
+transfer_data_to_csv('859713097777393')
