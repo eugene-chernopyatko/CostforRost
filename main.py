@@ -12,13 +12,13 @@ load_dotenv()
 
 """Выбор начальной даты для выгрузки"""
 since_year = 2024
-since_month = 10
+since_month = 11
 since_day = 4
 
 """Выбор конечной даты для выгрузки"""
 until_year = 2024
-until_month = 10
-until_day = 5
+until_month = 11
+until_day = 6
 
 
 def transfer_data_to_csv(account_id):
@@ -42,9 +42,10 @@ def transfer_data_to_csv(account_id):
         AdsInsights.Field.spend,
         AdsInsights.Field.impressions,
         AdsInsights.Field.clicks,
-        AdsInsights.Field.ad_id
-    ], params={
-        'level': 'ad',
+        AdsInsights.Field.adset_id
+    ],
+        params={
+        'level': 'adset',
         'time_increment': 1,
         'time_range': {
             'since': datetime(since_year, since_month, since_day).strftime('%Y-%m-%d'),
@@ -54,11 +55,11 @@ def transfer_data_to_csv(account_id):
     campaign_data = []
     for i in insights:
         campaign_data.append(['facebook', i['campaign_name'], i['adset_name'],
-                              i['ad_id'], i['impressions'], i['clicks'], i['spend'], i['date_stop']])
+                              i['adset_id'], i['impressions'], i['clicks'], i['spend'], i['date_stop']])
 
-    keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'impressions', 'clocks', 'cost', 'date']
+    keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'impressions', 'clicks', 'cost', 'date']
 
-    with open('cost.csv', 'a') as csvfile:
+    with open('cost.csv', 'w') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(keys)
         writer.writerows(campaign_data)
